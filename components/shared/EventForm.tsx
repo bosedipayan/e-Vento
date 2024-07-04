@@ -171,7 +171,13 @@ const EventForm = ({ userId, type }: EventFormProps) => {
 
                     <DatePicker
                       selected={field.value}
-                      onChange={(date: Date) => field.onChange(date)}
+                      onChange={(date: Date | null) => {
+                        if (date !== null) {
+                          field.onChange(date);
+                        } else {
+                          // Handle the case where date is null, if necessary
+                        }
+                      }}
                       showTimeSelect
                       timeInputLabel="Time:"
                       dateFormat="MM/dd/yyyy h:mm aa"
@@ -205,7 +211,13 @@ const EventForm = ({ userId, type }: EventFormProps) => {
 
                     <DatePicker
                       selected={field.value}
-                      onChange={(date: Date) => field.onChange(date)}
+                      onChange={(date: Date | null) => {
+                        if (date !== null) {
+                          field.onChange(date);
+                        } else {
+                          // Handle the case where date is null, if necessary
+                        }
+                      }}
                       showTimeSelect
                       timeInputLabel="Time:"
                       dateFormat="MM/dd/yyyy h:mm aa"
