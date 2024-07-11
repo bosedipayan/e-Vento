@@ -4,7 +4,7 @@ export default clerkMiddleware((req, res)=> {
   publicRoutes: [
     '/',
     '/events/:id',
-    '/api/webhook/clerk',
+    '/api/webhooks/clerk',
     '/api/webhook/stripe',
     '/api/uploadthing'
   ]

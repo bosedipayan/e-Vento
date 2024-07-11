@@ -17,6 +17,11 @@ export const createEvent = async({ event, userId, path }: CreateEventParams) => 
             throw new Error("Organizer not found");
         }
 
+        console.log({
+            categoryId: event.categoryId,
+            userId: userId
+        })
+
         const newEvent = await Event.create({ ...event, category: event.categoryId, organizer: userId});
 
         return JSON.parse(JSON.stringify(newEvent));
