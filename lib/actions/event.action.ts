@@ -1,11 +1,16 @@
 "use server"
 
-import { CreateEventParams } from "@/types"
+import { CreateEventParams, GetAllEventsParams } from "@/types"
 import { handleError } from "../utils"
 import { connectToDatabase } from "../database"
 import User from "../database/models/user.model"
 import Event from "../database/models/event.model"
 import Category from "../database/models/category.model"
+
+
+const getCategoryByName = async (name: string) => {
+  return Category.findOne({ name: { $regex: name, $options: 'i' } })
+}
 
 const populateEvent = async (query: any) => {
     return query
@@ -13,6 +18,8 @@ const populateEvent = async (query: any) => {
     .populate({ path: 'category', model: Category, select: '_id name' })
 }
 
+
+// CREATE
 export const createEvent = async({ event, userId, path }: CreateEventParams) => {
     try {
         await connectToDatabase();
@@ -37,6 +44,8 @@ export const createEvent = async({ event, userId, path }: CreateEventParams) => 
     }
 }
 
+
+// GET ONE EVENT BY ID
 export const getEventById = async(eventId: string) => {
     try {
         await connectToDatabase();
@@ -52,4 +61,32 @@ export const getEventById = async(eventId: string) => {
     } catch (error) {
         handleError(error);
     }
+}
+
+
+// GET ALL EVENTS
+export async function getAllEvents({ query, limit = 6, page, category }: GetAllEventsParams) {
+  try {
+    await connectToDatabase()
+
+    // const titleCondition = query ? { title: { $regex: query, $options: 'i' } } : {}
+    // const categoryCondition = category ? await getCategoryByName(category) : null
+    const conditions = {}
+
+    const skipAmount = (Number(page) - 1) * limit
+    const eventsQuery = Event.find(conditions)
+      .sort({ createdAt: 'desc' })
+      .skip(skipAmount)
+      .limit(limit)
+
+    const events = await populateEvent(eventsQuery)
+    const eventsCount = await Event.countDocuments(conditions)
+
+    return {
+      data: JSON.parse(JSON.stringify(events)),
+      totalPages: Math.ceil(eventsCount / limit),
+    }
+  } catch (error) {
+    handleError(error)
+  }
 }
