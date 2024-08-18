@@ -1,6 +1,6 @@
 "use server"
 
-import { CreateEventParams, GetAllEventsParams, DeleteEventParams, UpdateEventParams } from "@/types"
+import { CreateEventParams, GetAllEventsParams, DeleteEventParams, UpdateEventParams, GetRelatedEventsByCategoryParams, GetEventsByUserParams } from "@/types"
 import { handleError } from "../utils"
 import { connectToDatabase } from "../database"
 import User from "../database/models/user.model"
@@ -124,6 +124,57 @@ export async function deleteEvent({ eventId, path }: DeleteEventParams) {
 
     const deletedEvent = await Event.findByIdAndDelete(eventId)
     if (deletedEvent) revalidatePath(path)
+  } catch (error) {
+    handleError(error)
+  }
+}
+
+
+// GET RELATED EVENTS: EVENTS WITH SAME CATEGORY
+export async function getRelatedEventsByCategory({
+  categoryId,
+  eventId,
+  limit = 3,
+  page = 1,
+}: GetRelatedEventsByCategoryParams) {
+  try {
+    await connectToDatabase()
+
+    const skipAmount = (Number(page) - 1) * limit
+    const conditions = { $and: [{ category: categoryId }, { _id: { $ne: eventId } }] }
+
+    const eventsQuery = Event.find(conditions)
+      .sort({ createdAt: 'desc' })
+      .skip(skipAmount)
+      .limit(limit)
+
+    const events = await populateEvent(eventsQuery)
+    const eventsCount = await Event.countDocuments(conditions)
+
+    return { data: JSON.parse(JSON.stringify(events)), totalPages: Math.ceil(eventsCount / limit) }
+  } catch (error) {
+    handleError(error)
+  }
+}
+
+
+// GET EVENTS BY ORGANIZER
+export async function getEventsByUser({ userId, limit = 6, page }: GetEventsByUserParams) {
+  try {
+    await connectToDatabase()
+
+    const conditions = { organizer: userId }
+    const skipAmount = (page - 1) * limit
+
+    const eventsQuery = Event.find(conditions)
+      .sort({ createdAt: 'desc' })
+      .skip(skipAmount)
+      .limit(limit)
+
+    const events = await populateEvent(eventsQuery)
+    const eventsCount = await Event.countDocuments(conditions)
+
+    return { data: JSON.parse(JSON.stringify(events)), totalPages: Math.ceil(eventsCount / limit) }
   } catch (error) {
     handleError(error)
   }
