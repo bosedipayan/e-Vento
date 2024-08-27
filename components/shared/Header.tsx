@@ -11,12 +11,7 @@ const Header = () => {
     <header className="w-full border-b">
       <div className="wrapper flex items-center justify-between">
         <Link href="/" className="w-36">
-          <Image
-            src="/assets/images/logo.svg"
-            alt="eVento logo"
-            width={128}
-            height={38}
-          />
+          <h3 className="h3-bold">eVento</h3>
         </Link>
 
         <SignedIn>
